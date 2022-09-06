@@ -68,12 +68,12 @@ public class MersGenerator
 
 //		we would expect to see AAA occur with a probability of 1.56% if each base has a uniform sampling probability. This is roughly the result Java gives as well, typically ranging from 1.1% to 2.3% at 1,000 runs. At 1,000,000 runs, it is almost always within 0.02% of 1.56%..
 		System.out.println("AAA occurred " + unweightedCounter + " times with equal base selection probability.");
-		System.out.println("That is " + (unweightedCounter / 1000) * 100 + "% of the time");
+		System.out.println("That is " + (unweightedCounter / 1000) * 100 + "% of the time.");
 
 		
 //		when using weighted selection probability, we would expect to see AAA occur with a probability of 0.173%. When run 1,000 times, the observed is not consistently close to the expected. However, when run 1,000,000, the observed is within 0.02% of 0.173% most of the time
-		System.out.println("AAA occurred " + weightedCounter + " times with equal base selection probability.");
-		System.out.println("That is " + (weightedCounter / 1000) * 100 + "% of the time");
+		System.out.println("AAA occurred " + weightedCounter + " times with unequal base selection probability.");
+		System.out.println("That is " + (weightedCounter / 1000) * 100 + "% of the time.");
 	}
 
 }
