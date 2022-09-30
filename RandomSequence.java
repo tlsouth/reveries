@@ -4,31 +4,52 @@ import java.util.Random;
 
 public class RandomSequence 
 {
+
 	public static String generateRandomSequence(char[] alphabet, float[] weights, int length) 
 		throws Exception
-		
 	{
+		//setting up variables to be used later
 		String randomSequence = "";
 		float sum = 0;
+		//allows generation of random floats later on
 		Random random = new Random();
+		float f = random.nextFloat();
+		//summing all the weights for later use to make sure the total is 1
 		for(int i = 0; i < weights.length; i++) 
 			{
-				sum = sum + weights[i];
+				sum = sum + weights[i];			
 			}
-		//if can break this somehow, add && weights.length >= 0
-		if(alphabet.length == weights.length && length >= 0 && sum <= 1.0)
-			{
-			for (int i = 0; i < alphabet.length; i++)
+		//next three lines are all checks to ensure preconditions are met. if not met, the accompanying exception message is printed
+		if(Math.abs(sum - 1) > 0.001) throw new Exception("Sum not equal to 1.");
+		if(alphabet.length != weights.length) throw new Exception("Alphabet and weight lengths not equal.");
+		if(length < 0) throw new Exception("Length is less than 0");
+		//loop that iterates over the length of 'length'
+			for(int x = 0; x < length; x++)
 				{
-				char c = alphabet[random.nextInt(alphabet.length)];
-				randomSequence += c;
+					//generates new random float for each instance in length
+					f = random.nextFloat();
+					//resets counter used for indexing for each instance in length
+					int count = 0;
+					//resets cumulative_weight similar to count
+					float cumulative_weight = 0;
+					//resets selection in each instance, which is the alphabet character selected
+					char selection = 0;
+					//for loop that runs while the cumulative_weight is less than the randomly generated float. this allows us to perform weighted selection
+					for(int i = 0; f > cumulative_weight; i++)
+					{
+							//adds up the weights so that when cumulative_weight > f, the loop breaks and a character is selected
+							cumulative_weight += weights[i];
+							//ups the counter each time a weight is added to cumulative_weight, so we know the index of the last weight added
+							count = count + 1;
+							//assigns the alphabet character in the same index as the last added weight to selection
+							selection = alphabet[count - 1];
+						}
+					//appends the alphabet character that was selected using weights to the randomSequence
+					randomSequence += selection;
 				}
-		return randomSequence;
-		}
-		else
-		{
-			throw new Exception("Pre-condition failed. Check your parameters.");
-		}
+			//returns the randomSequence to the user
+			return randomSequence;
+			
 	}
 	public static void main(String[] args) throws Exception
 	{
@@ -49,9 +70,9 @@ public class RandomSequence
 		char[] proteinResidues = 
 				new char[] { 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T',
 							 'V', 'W', 'Y' };
-		
-		// a random protein with 30 residues
-		System.out.println(generateRandomSequence(proteinResidues, proteinBackground, 30));
+//		
+//		// a random protein with 30 residues
+//		System.out.println(generateRandomSequence(proteinResidues, proteinBackground, 30));
 		
 	}
 
