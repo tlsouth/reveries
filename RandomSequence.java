@@ -36,7 +36,7 @@ public class RandomSequence
 					char selection = 0;
 					//for loop that runs while the cumulative_weight is less than the randomly generated float. this allows us to perform weighted selection
 					for(int i = 0; f > cumulative_weight; i++)
-					{
+						{
 							//adds up the weights so that when cumulative_weight > f, the loop breaks and a character is selected
 							cumulative_weight += weights[i];
 							//ups the counter each time a weight is added to cumulative_weight, so we know the index of the last weight added
