@@ -70,9 +70,9 @@ public class RandomSequence
 		char[] proteinResidues = 
 				new char[] { 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T',
 							 'V', 'W', 'Y' };
-//		
+		
 //		// a random protein with 30 residues
-//		System.out.println(generateRandomSequence(proteinResidues, proteinBackground, 30));
+		System.out.println(generateRandomSequence(proteinResidues, proteinBackground, 30));
 		
 	}
 
