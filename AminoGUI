@@ -15,45 +15,43 @@ import javax.swing.JTextField;
 public class AminoGUI extends JFrame
 {
 	private static final long serialVersionUID = 1975L;
-	static int correctCount = 0;
-	static int incorrectCount = 0;
-	static int index = 0;
+	static Integer correctCount = 0;
+	static Integer incorrectCount = 0;
+	static Integer index = 0;
 	private JTextField prompt = new JTextField();
 	private JTextField input = new JTextField("");
-	private JTextField correct = new JTextField("Correct\n" + correctCount);
-	private JTextField incorrect = new JTextField("Incorrect\n" + incorrectCount);
+	private JTextField Correct = new JTextField("Correct\n" + correctCount);
+	private JTextField Incorrect = new JTextField("Incorrect\n" + incorrectCount);
 	private JTextField time = new JTextField("Time");
 	private JButton start = new JButton("Start Quiz");
 	private JButton space = new JButton("");
 	private JButton cancel = new JButton("Cancel Quiz");
 	
+	public void aminoGen()
+	{
+		Random random = new Random();
+		String acid = "";
+
+		String[] FULL_NAMES = 
+		{"alanine","arginine", "asparagine", 
+		"aspartic acid", "cysteine",
+		"glutamine",  "glutamic acid",
+		"glycine" ,"histidine","isoleucine",
+		"leucine",  "lysine", "methionine", 
+		"phenylalanine", "proline", 
+		"serine","threonine","tryptophan", 
+		"tyrosine", "valine"};
+			
+		index = random.nextInt(19);
+		acid = FULL_NAMES[index];
+		updateTextField(acid);
+	}
+	
 	private class StartListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
 		{
-//			int index = 0;
-			Random random = new Random();
-			String acid = "";
-			
-			String[] SHORT_NAMES = 
-				{ "A","R", "N", "D", "C", "Q", "E",
-				"G",  "H", "I", "L", "K", "M", "F", 
-				"P", "S", "T", "W", "Y", "V" };
-
-				String[] FULL_NAMES = 
-				{"alanine","arginine", "asparagine", 
-				"aspartic acid", "cysteine",
-				"glutamine",  "glutamic acid",
-				"glycine" ,"histidine","isoleucine",
-				"leucine",  "lysine", "methionine", 
-				"phenylalanine", "proline", 
-				"serine","threonine","tryptophan", 
-				"tyrosine", "valine"};
-				
-			index = random.nextInt(19);
-			acid = FULL_NAMES[index];
-			updateTextField(acid);
-
+			aminoGen();
 		}
 	}	
 
@@ -69,18 +67,46 @@ public class AminoGUI extends JFrame
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			//this works now, so the code in here needs to check if the entered value is the amino acid
-			//if so, counter needs to increase
+			String answer = input.getText();
+			String[] SHORT_NAMES = 
+				{ "A","R", "N", "D", "C", "Q", "E",
+				"G",  "H", "I", "L", "K", "M", "F", 
+				"P", "S", "T", "W", "Y", "V" };
+			//prints out correct index, so index is accessible here
+			System.out.println(index);
+			if (answer.toUpperCase().equals(SHORT_NAMES[index])) 
+				{
+//					correctCount ++;
+					updateCorrectField(correctCount++);
+				}
+			else
+				{
+//					incorrectCount ++;
+					updateIncorrectField(incorrectCount++);
+				}
+			input.setText("");
+			aminoGen();
 		}
 	}
+	
+	private void updateCorrectField(Integer x)
+	{
+		Correct.setText("Correct:\n" + String.valueOf(x));
+		validate();
+	}
+	
+	private void updateIncorrectField(Integer x)
+	{
+		Incorrect.setText("Incorrect:\n" + String.valueOf(x));
+		validate();
+	}
+	
 	
 	private void updateTextField(String text)
 	{
 		prompt.setText(text);
 		validate();
 	}
-
-/////
 	
 	private JPanel startCancel()
 	{
@@ -127,8 +153,12 @@ public class AminoGUI extends JFrame
 		cancel.addActionListener(new CancelListener());
 		getContentPane().add(promptTime(), BorderLayout.NORTH);
 		getContentPane().add(input, BorderLayout.CENTER);
-		getContentPane().add(correct, BorderLayout.WEST);
-		getContentPane().add(incorrect, BorderLayout.EAST);
+		getContentPane().add(Correct, BorderLayout.WEST);
+		getContentPane().add(Incorrect, BorderLayout.EAST);
+		Correct.setEditable(false);
+		prompt.setEditable(false);
+		time.setEditable(false);
+		Incorrect.setEditable(false);
 		
 		input.addActionListener(new inputListener());
 		setVisible(true);
