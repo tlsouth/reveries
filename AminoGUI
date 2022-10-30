@@ -1,31 +1,54 @@
 package lab5;
 
 import java.awt.BorderLayout;
-import java.awt.Desktop.Action;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 
 public class AminoGUI extends JFrame
 {
 	private static final long serialVersionUID = 1975L;
+	//sets empty variables for the counts and indices
 	static Integer correctCount = 0;
 	static Integer incorrectCount = 0;
 	static Integer index = 0;
+	//creates new textfields for displaying things
 	private JTextField prompt = new JTextField();
 	private JTextField input = new JTextField("");
 	private JTextField Correct = new JTextField("Correct\n" + correctCount);
 	private JTextField Incorrect = new JTextField("Incorrect\n" + incorrectCount);
-	private JTextField time = new JTextField("Time");
+	private JTextField time = new JTextField();
+	//buttons for starting and canceling program
 	private JButton start = new JButton("Start Quiz");
+	//third button for aesthetic and symmetry
 	private JButton space = new JButton("");
 	private JButton cancel = new JButton("Cancel Quiz");
+	
+	Timer timer = new Timer(1000, new timeActionListener());
+	
+	private class timeActionListener implements ActionListener
+	{
+		//31 because it starts immediately after use action
+		int timeRemaining = 31;
+		
+		public void actionPerformed(ActionEvent i)
+		{
+			timeRemaining--;
+			time.setText(String.valueOf(timeRemaining));
+			if(timeRemaining <= 0) 
+			{
+				timer.stop();
+				input.setEnabled(false);
+				prompt.setEnabled(false);
+			}
+		}
+	}
 	
 	public void aminoGen()
 	{
@@ -52,6 +75,7 @@ public class AminoGUI extends JFrame
 		public void actionPerformed(ActionEvent arg0)
 		{
 			aminoGen();
+			timer.start();
 		}
 	}	
 
@@ -151,6 +175,7 @@ public class AminoGUI extends JFrame
 		getContentPane().add(startCancel(), BorderLayout.SOUTH);
 		start.addActionListener(new StartListener());
 		cancel.addActionListener(new CancelListener());
+		time.addActionListener(new timeActionListener());
 		getContentPane().add(promptTime(), BorderLayout.NORTH);
 		getContentPane().add(input, BorderLayout.CENTER);
 		getContentPane().add(Correct, BorderLayout.WEST);
@@ -159,7 +184,6 @@ public class AminoGUI extends JFrame
 		prompt.setEditable(false);
 		time.setEditable(false);
 		Incorrect.setEditable(false);
-		
 		input.addActionListener(new inputListener());
 		setVisible(true);
 	}	
