@@ -18,7 +18,7 @@ public class AminoGUI extends JFrame
 	static Integer correctCount = 0;
 	static Integer incorrectCount = 0;
 	static Integer index = 0;
-	//creates new textfields for displaying things
+	//creates new text fields for displaying things
 	private JTextField prompt = new JTextField();
 	private JTextField input = new JTextField("");
 	private JTextField Correct = new JTextField("Correct\n" + correctCount);
@@ -26,18 +26,16 @@ public class AminoGUI extends JFrame
 	private JTextField time = new JTextField();
 	//buttons for starting and canceling program
 	private JButton start = new JButton("Start Quiz");
+	private JButton cancel = new JButton("Cancel Quiz");
 	//third button for aesthetic and symmetry
 	private JButton space = new JButton("");
-	private JButton cancel = new JButton("Cancel Quiz");
-	
-	//creates new timer
+	//creates new timer & initializes timer length
 	Timer timer = new Timer(1000, new timeActionListener());
-	
+	int timeRemaining = 31;
 	//actionListener for timer
 	private class timeActionListener implements ActionListener
 	{
 		//3 because it starts immediately after use action
-		int timeRemaining = 31;
 		
 		public void actionPerformed(ActionEvent i)
 		{
@@ -89,16 +87,28 @@ public class AminoGUI extends JFrame
 			aminoGen();
 			//starts timer when start button is hit
 			timer.start();
+			//allows the user to input amino acids
+			input.setEnabled(true);
+			//reinitializes the counters for displaying score
+			correctCount = 0;
+			incorrectCount = 0;
+			Correct.setText("Correct\n" + correctCount);
+			Incorrect.setText("Incorrect\n" + correctCount);
+			//reinitializes timer length
+			timeRemaining = 31;
 		}
-	}	
+	}
 
 	//cancel button actionListener
 	private class CancelListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			//if user hits the cancel button, the GUI closes
-			System.exit(0);
+			//stops the timer and prevents further user input
+			timer.stop();
+			input.setEnabled(false);
+			//tells the user they canceled the quiz
+			updateTextField("You have canceled the quiz.");
 		}
 	}
 	
@@ -116,13 +126,13 @@ public class AminoGUI extends JFrame
 			//code for updating incorrect and correct counters based on user input, and displays the counts
 			if (answer.toUpperCase().equals(SHORT_NAMES[index])) 
 				{
-//					correctCount ++;
-					updateCorrectField(correctCount++);
+					correctCount ++;
+					updateCorrectField(correctCount);
 				}
 			else
 				{
-//					incorrectCount ++;
-					updateIncorrectField(incorrectCount++);
+					incorrectCount ++;
+					updateIncorrectField(incorrectCount);
 				}
 			//clears the input box after each user input
 			input.setText("");
@@ -164,18 +174,8 @@ public class AminoGUI extends JFrame
 		panel.add(cancel);
 		
 		start.addActionListener(new StartListener());
-		
-		cancel.addActionListener
-		(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					String cancelText = "hit cancel";
-					updateTextField(cancelText);
-				}
-			}
-		);
+		cancel.addActionListener(new CancelListener());
+
 		return panel;
 	}
 	
@@ -225,4 +225,3 @@ public class AminoGUI extends JFrame
 	}
 }
 
-	
