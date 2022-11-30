@@ -32,6 +32,22 @@ public class AminoGUI extends JFrame
 	//creates new timer & initializes timer length
 	Timer timer = new Timer(1000, new timeActionListener());
 	int timeRemaining = 31;
+	
+	final String[] SHORT_NAMES = 
+		{ "A","R", "N", "D", "C", "Q", "E",
+		"G",  "H", "I", "L", "K", "M", "F", 
+		"P", "S", "T", "W", "Y", "V" };
+	
+	final String[] FULL_NAMES = 
+	{"alanine","arginine", "asparagine", 
+	"aspartic acid", "cysteine",
+	"glutamine",  "glutamic acid",
+	"glycine" ,"histidine","isoleucine",
+	"leucine",  "lysine", "methionine", 
+	"phenylalanine", "proline", 
+	"serine","threonine","tryptophan", 
+	"tyrosine", "valine"};
+	
 	//actionListener for timer
 	private class timeActionListener implements ActionListener
 	{
@@ -59,17 +75,6 @@ public class AminoGUI extends JFrame
 		//code from original amino acid quiz
 		Random random = new Random();
 		String acid = "";
-
-		final String[] FULL_NAMES = 
-		{"alanine","arginine", "asparagine", 
-		"aspartic acid", "cysteine",
-		"glutamine",  "glutamic acid",
-		"glycine" ,"histidine","isoleucine",
-		"leucine",  "lysine", "methionine", 
-		"phenylalanine", "proline", 
-		"serine","threonine","tryptophan", 
-		"tyrosine", "valine"};
-		
 		//getting new index
 		index = random.nextInt(19);
 		//getting acid at that index
@@ -119,10 +124,6 @@ public class AminoGUI extends JFrame
 		{
 			//code from original amino acid quiz
 			String answer = input.getText();
-			final String[] SHORT_NAMES = 
-				{ "A","R", "N", "D", "C", "Q", "E",
-				"G",  "H", "I", "L", "K", "M", "F", 
-				"P", "S", "T", "W", "Y", "V" };
 			//code for updating incorrect and correct counters based on user input, and displays the counts
 			if (answer.toUpperCase().equals(SHORT_NAMES[index])) 
 				{
@@ -223,4 +224,4 @@ public class AminoGUI extends JFrame
 	{
 		new AminoGUI();
 	}
-}	
+}
