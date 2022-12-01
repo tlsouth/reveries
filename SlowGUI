@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -31,29 +32,19 @@ public class RedGUI extends JFrame
 	private JButton cancel = new JButton("Cancel");
 	private JLabel time = new JLabel("", SwingConstants.CENTER);
 	private JTextField progress = new JTextField();
-	String threadOptions[] = {"1", "2", "3", "4", "5"};
-	private final JComboBox<String> threadCount = new JComboBox<String>(threadOptions);
+	private JLabel threads = new JLabel("", SwingConstants.CENTER);
+	private Integer threadCount = 0;
+	private volatile boolean isCancel = false;
 	
-	private boolean isCancel = false;
+	private class CancelListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			isCancel = true;
+			threadCount = 0;
+		}
+	}
 	
-	private static int workers = 3;
-	
-//	private static class Worker implements Runnable
-//	{
-//		Semaphore semph = new Semaphore(workers);
-//		
-//		semph.acquire();
-//		semph.release();
-//		
-//		public void run()
-//		{
-//			try
-//			{
-//				
-//			}
-//		}
-//	}
-
 	private class StartListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
@@ -61,33 +52,23 @@ public class RedGUI extends JFrame
 			isCancel = false;
 			start.setEnabled(false);
 			cancel.setEnabled(true);
-			new Thread(new StartActionRunnable()).start();
+			//MAKE IT SO YOU CAN RE-SELECT THREADS AFTER A RUN
+			while(threadCount == 0)
+			{
+				threadCount = Integer.parseInt(JOptionPane.showInputDialog("Number of threads (1-5):"));
+				if(threadCount < 1 || threadCount > 5)
+				{
+					threadCount = Integer.parseInt(JOptionPane.showInputDialog("Please enter a number between 1 and 5!"));
+				}
+				threads.setText("Number of Threads: " + threadCount.toString());
+			}
+			new Thread(new FindPrimes()).start();
 		}
 	}
-	
-	private class CancelListener implements ActionListener
+
+	private class FindPrimes implements Runnable
 	{
-		public void actionPerformed(ActionEvent e)
-		{
-			//actually need code here to display all the prime numbers found, and a count of how many there are
-//			output.setText("There are " + numPrimes + " prime numbers, including: " + sPrimes);
-			isCancel = true;
-		}
-	}
-	
-//	public class threadCountListener implements ActionListener
-//	{
-//		public void actionPerformed(ActionEvent e)
-//		{
-//			int numThreads = (int) threadCount.getSelectedItem();
-//			directions.setText(String.valueOf(numThreads));
-//			System.out.println(numThreads);
-//			validate();
-//		}
-//	}
-	
-	private class StartActionRunnable implements Runnable
-	{
+//		@Override
 		public void run()
 		{
 			try
@@ -95,13 +76,13 @@ public class RedGUI extends JFrame
 				int userNum = Integer.parseInt(input.getText());
 				
 				List<Integer> primes = new ArrayList<>();
-				List<Integer> nonPrimes = new ArrayList<>();
+//				List<Integer> nonPrimes = new ArrayList<>();
 				
 				int i = 2;
 				
 				long startTime = System.currentTimeMillis();
 				
-				while(!isCancel && i < userNum)
+				while(!isCancel && i <= userNum)
 				{
 					boolean checkPrime = true;
 					
@@ -118,21 +99,23 @@ public class RedGUI extends JFrame
 					{
 						primes.add(i);
 					}
-					progress.setText("Checking number " + i + " of " + userNum);
-					
 					long current = (System.currentTimeMillis() - startTime) / 1000;
 //					long totalTime = (current - startTime) / 1000;
 					time.setText(current + " seconds passed.");
 					
 					i++;
-					updateProgress(i);
-//					String sPrimes = primes.toString();
-//					int numPrimes = primes.size();
+					
+					if(current%2 == 0)
+					{
+						int numPrimes = primes.size();
+						progress.setText("There are " + numPrimes + " so far.");
+					}
+					if(current%1 == 0)
+					{
+						time.setText(current + " seconds passed.");
+					}
+
 					output.setText("There are " + primes.size() + " prime numbers, including:\n");
-//					for(Integer x: primes)
-//					{
-//						output.append(x + "\n");
-//					}
 
 					for(Integer x: primes)
 					{
@@ -177,7 +160,7 @@ public class RedGUI extends JFrame
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(2, 0));
-		panel.add(threadCount);
+		panel.add(threads);
 		panel.add(time);
 		return panel;
 	}
