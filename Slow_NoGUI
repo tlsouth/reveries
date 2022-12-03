@@ -1,0 +1,99 @@
+package lab6;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+
+public class SomethingSlow 
+{
+	public static int getRanges(int userNum, int threads)
+	{
+		int diff = (userNum)/threads;
+		int y = 0;
+		for(int i = 0; i < threads; i++)
+		{
+			y = y + diff;
+			System.out.println(y);
+		}
+		if(y != userNum)
+		{
+			for(int l = y + 1; l <= userNum; l++)
+			{
+				System.out.println(l + "closing the gap");
+			}
+		}
+		return y;
+	}
+	
+	public static class findPrimes implements Runnable
+	{
+		private final int userNum;
+		private final Semaphore semaphore;
+		Integer threads = 5;
+//		int userNum = 10;
+		public findPrimes(int userNum, Semaphore semaphore)
+		{
+			this.userNum = userNum;
+			this.semaphore = semaphore;
+		}
+		@Override
+		public void run() 
+		{
+			try
+			{
+				//this creates range cutoffs based on userNum and threads
+				List<Integer> primes = new ArrayList<>();
+				System.out.println(userNum);
+				semaphore.acquire();
+				//end of range cutoff code
+				int i = 2;
+				while(i <= userNum)
+				{
+					boolean checkPrime = true;
+					//check then act needs to have some sort of synchronized lock
+					for(int x = 2; x < i; x++)
+					{
+						if(i%x == 0)
+						{
+							checkPrime = false;
+							break;
+						}
+					}
+					if(checkPrime)
+					{
+						primes.add(i);
+					}
+					i++;
+					
+//					System.out.println(primes);
+				}
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+				System.out.println("exit");
+				System.exit(1);
+			}
+			finally
+			{
+				semaphore.release();
+			}
+		}
+	}
+	public static void main(String[] args) throws Exception
+	{
+		int threads = 5;
+		int userNum = 213489789;
+		getRanges(userNum, threads);
+		Semaphore s = new Semaphore(threads);
+		long startTime = System.currentTimeMillis();
+//		s.acquire();
+		findPrimes f = new findPrimes(userNum, s);
+		new Thread(f).start();
+		for(int x = 0; x < threads; x++)
+		{
+			s.acquire();
+		}
+		System.out.println("This took: " + (System.currentTimeMillis() - startTime) / 1000f + " seconds. slay :)");
+	}
+}
