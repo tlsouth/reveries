@@ -121,7 +121,7 @@ public class SomethingSlowGUI extends JFrame
 
 	public SomethingSlowGUI()
 	{
-		super("Slow asf");
+		super("Very slow thing");
 		setLocationRelativeTo(null);
 		setSize(400, 400);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
