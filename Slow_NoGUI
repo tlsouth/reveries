@@ -10,16 +10,23 @@ public class SomethingSlow
 	{
 		int diff = (userNum)/threads;
 		int y = 0;
+		int rangeCount = 0;
+
 		for(int i = 0; i < threads; i++)
 		{
 			y = y + diff;
-			System.out.println(y);
+			System.out.println("End of range " + rangeCount + " is " + y + ".\n");
+			rangeCount++;
+			//printing the numbers to the GUI NOTE: to do this, we had to make 'output' in SomethingSlowGUI static, so will likely have to do that to all of them :\
+			SomethingSlowGUI.output.append("End of range " + rangeCount + " is " + y + ".\n");
 		}
 		if(y != userNum)
 		{
 			for(int l = y + 1; l <= userNum; l++)
 			{
-				System.out.println(l + "closing the gap");
+				System.out.println(l + " closing the gap");
+				//printing the numbers to the GUI
+				SomethingSlowGUI.output.append(l + " closing the gap\n");
 			}
 		}
 		return y;
@@ -29,7 +36,6 @@ public class SomethingSlow
 	{
 		private final int userNum;
 		private final Semaphore semaphore;
-		Integer threads = 5;
 //		int userNum = 10;
 		public findPrimes(int userNum, Semaphore semaphore)
 		{
@@ -43,7 +49,6 @@ public class SomethingSlow
 			{
 				//this creates range cutoffs based on userNum and threads
 				List<Integer> primes = new ArrayList<>();
-				System.out.println(userNum);
 				semaphore.acquire();
 				//end of range cutoff code
 				int i = 2;
