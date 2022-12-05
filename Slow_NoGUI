@@ -1,77 +1,198 @@
 package lab6;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.Scanner;
 
-public class SomethingSlow 
+public class SlowNoGUI
 {
-	public static int getRanges(int userNum, int threads)
+	static volatile List<Integer> array1 = new ArrayList<>();
+	static volatile List<Integer> array2 = new ArrayList<>();
+	static volatile List<Integer> array3 = new ArrayList<>();
+	static volatile List<Integer> array4 = new ArrayList<>();
+	static volatile List<Integer> array5 = new ArrayList<>();
+	static volatile CopyOnWriteArrayList<Integer> array1Add = new CopyOnWriteArrayList<>();
+	static volatile CopyOnWriteArrayList<Integer> array2Add = new CopyOnWriteArrayList<>();
+	static volatile CopyOnWriteArrayList<Integer> array3Add = new CopyOnWriteArrayList<>();
+	static volatile CopyOnWriteArrayList<Integer> array4Add = new CopyOnWriteArrayList<>();
+	static volatile CopyOnWriteArrayList<Integer> array5Add = new CopyOnWriteArrayList<>();
+	static CopyOnWriteArrayList<Integer> primeN = new CopyOnWriteArrayList<Integer>();
+	static volatile List<List<Integer>> allArrayLists = new ArrayList<>();
+	static volatile List<List<Integer>> allAddedArrays = new ArrayList<>();
+	
+	
+	
+	static long startTime = 0;
+	static long endTime = 0;
+	
+	static Scanner termInput = new Scanner(System.in);
+	
+	public static int getArrays(int userNum, int threadCount)
 	{
-		int diff = (userNum)/threads;
-		int y = 0;
-		int rangeCount = 0;
-
-		for(int i = 0; i < threads; i++)
+		int i = 1;
+		if (threadCount == 1)
 		{
-			y = y + diff;
-			System.out.println("End of range " + rangeCount + " is " + y + ".\n");
-			rangeCount++;
-			//printing the numbers to the GUI NOTE: to do this, we had to make 'output' in SomethingSlowGUI static, so will likely have to do that to all of them :\
-			SomethingSlowGUI.output.append("End of range " + rangeCount + " is " + y + ".\n");
-		}
-		if(y != userNum)
-		{
-			for(int l = y + 1; l <= userNum; l++)
+			while(i<=userNum)
 			{
-				System.out.println(l + " closing the gap");
-				//printing the numbers to the GUI
-				SomethingSlowGUI.output.append(l + " closing the gap\n");
+				array1.add(i);
+				i++;
 			}
 		}
-		return y;
+		if (threadCount == 2) 
+		{
+			while(i<=userNum)
+			{
+				array1.add(i);
+				int con = i;
+				i++;
+				while(i<=userNum && i > con)
+				{
+					array2.add(i);
+					i++;
+					break;
+				}
+			}
+		}
+		if (threadCount == 3)
+		{
+			first:
+				while(i<=userNum)
+				{
+					array1.add(i);
+					int con = i;
+					i++;
+					while(i<=userNum && i > con)
+					{
+						array2.add(i);
+						int con2 = i;
+						i++;
+						while(i<=userNum && i > con2)
+						{
+							array3.add(i);
+							i++;
+							continue first;
+						}
+					}
+				}
+		}
+		if (threadCount == 4)
+		{
+			first:
+				while(i<=userNum)
+				{
+					array1.add(i);
+					int con = i;
+					i++;
+					while(i<=userNum && i > con)
+					{
+						array2.add(i);
+						int con2 = i;
+						i++;
+						while(i<=userNum && i > con2)
+						{
+							array3.add(i);
+							int con3 = i;
+							i++;
+							while(i<=userNum && i > con3)
+							{
+								array4.add(i);
+								i++;
+								continue first;
+							}
+						}
+					}
+				}
+		}
+		if (threadCount == 5)
+		{
+			first:
+				while(i<=userNum)
+				{
+					array1.add(i);
+					int con = i;
+					i++;
+					while(i<=userNum && i > con)
+					{
+						array2.add(i);
+						int con2 = i;
+						i++;
+						while(i<=userNum && i > con2)
+						{
+							array3.add(i);
+							int con3 = i;
+							i++;
+							while(i<=userNum && i > con3)
+							{
+								array4.add(i);
+								int con4 = i;
+								i++;
+								while(i<=userNum && i > con4)
+								{
+									array5.add(i);
+									i++;
+									continue first;
+								}
+							}
+						}
+					}
+				}
+		}
+		allArrayLists.add(array1);
+		allArrayLists.add(array2);
+		allArrayLists.add(array3);
+		allArrayLists.add(array4);
+		allArrayLists.add(array5);
+		return threadCount;
 	}
 	
 	public static class findPrimes implements Runnable
+	
 	{
-		private final int userNum;
+		private final List<Integer> array;
 		private final Semaphore semaphore;
-//		int userNum = 10;
-		public findPrimes(int userNum, Semaphore semaphore)
+		private final List<Integer> addTo;
+ 
+		public findPrimes(List<Integer> array, Semaphore semaphore, List<Integer> addTo)
 		{
-			this.userNum = userNum;
+			this.array = array;
 			this.semaphore = semaphore;
+			this.addTo = addTo;
 		}
 		@Override
 		public void run() 
 		{
 			try
 			{
-				//this creates range cutoffs based on userNum and threads
-				List<Integer> primes = new ArrayList<>();
-				semaphore.acquire();
-				//end of range cutoff code
-				int i = 2;
-				while(i <= userNum)
+				for (int x = 0; x < array.size(); x++) 
 				{
-					boolean checkPrime = true;
-					//check then act needs to have some sort of synchronized lock
-					for(int x = 2; x < i; x++)
-					{
-						if(i%x == 0)
-						{
-							checkPrime = false;
-							break;
-						}
-					}
-					if(checkPrime)
-					{
-						primes.add(i);
-					}
-					i++;
-					
-//					System.out.println(primes);
-				}
+			        boolean isPrime = true;
+			        System.out.println(x);
+			        if (array.get(x) == 1)
+			            isPrime = false;
+			        else 
+			        {
+			            // check to see if the numbers are prime
+			            for (int j = 2; j <= array.get(x) / 2; j++) 
+			            {
+			                if (array.get(x) % j == 0) 
+			                {
+			                    isPrime = false;
+			                    break;
+			                }
+			            }
+			        }
+			        if (isPrime)
+			        {
+			            if (array.get(x) == 0) {}
+			            else 
+			            {
+			            	addTo.add(array.get(x));
+			            }
+			        }
+			    }
 			}
 			catch(Exception ex)
 			{
@@ -79,26 +200,84 @@ public class SomethingSlow
 				System.out.println("exit");
 				System.exit(1);
 			}
+			
 			finally
 			{
 				semaphore.release();
 			}
 		}
 	}
-	public static void main(String[] args) throws Exception
+	public static void threadWork(int threadCount, int userNum) throws Exception
 	{
-		int threads = 5;
-		int userNum = 213489789;
-		getRanges(userNum, threads);
-		Semaphore s = new Semaphore(threads);
-		long startTime = System.currentTimeMillis();
-//		s.acquire();
-		findPrimes f = new findPrimes(userNum, s);
-		new Thread(f).start();
-		for(int x = 0; x < threads; x++)
+		allAddedArrays.add(array1Add);
+		allAddedArrays.add(array2Add);
+		allAddedArrays.add(array3Add);
+		allAddedArrays.add(array4Add);
+		allAddedArrays.add(array5Add);
+		
+		Semaphore s = new Semaphore(getArrays(userNum,threadCount));
+		//time
+		startTime = System.currentTimeMillis();
+		//time
+		for(int i = 0; i < allArrayLists.size(); i++)
 		{
 			s.acquire();
+			findPrimes primes = new findPrimes(allArrayLists.get(i), s, allAddedArrays.get(i));
+			new Thread(primes).start();
 		}
-		System.out.println("This took: " + (System.currentTimeMillis() - startTime) / 1000f + " seconds. slay :)");
+		//time
+		endTime = System.currentTimeMillis();
+		//time
+	}
+	
+	
+	public static void control(int userNum, int threadCount)
+	{
+		try 
+		{
+			threadWork(threadCount, userNum);
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+		List<Integer> finalList = Collections.synchronizedList(new ArrayList<Integer>());
+		List<List<Integer>> allPrimes = new ArrayList<>();
+		allPrimes.add(array1Add);
+		allPrimes.add(array2Add);
+		allPrimes.add(array3Add);
+		allPrimes.add(array4Add);
+		allPrimes.add(array5Add);
+		synchronized(finalList)
+		{
+			for(List<Integer> i:allPrimes)
+			{
+				for(int u: i)
+				{
+					if(!finalList.contains(u))
+					{
+						finalList.add(u);
+					}
+					System.out.println(finalList);
+				}
+			}
+		}
+		Collections.sort(finalList);
+		SlowGUI.output.setText("");
+		for(int n: finalList)
+		{
+			SlowGUI.output.append(n + "\n");
+		}
+		SlowGUI.progress.setText(finalList.size() + " prime numbers found.");
+		SlowGUI.output.append("This took " + (endTime - startTime)/1000f + " seconds.");
+	}
+	public static void main(String[] args) throws Exception
+	{
+		System.out.println("Please enter the number you'd like to search:\n");
+		int userNum = Integer.valueOf(termInput.nextLine());
+		System.out.println("Please enter the number of threads you'd like to use:\n");
+		int threadCount = Integer.valueOf(termInput.nextLine());
+		control(userNum, threadCount);
+		System.out.println("To search for primes between 1 and " + userNum + " it took " + (endTime - startTime)/1000f + " seconds.");
 	}
 }
