@@ -1,0 +1,224 @@
+package lab6;
+
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+
+public class PrimesGUI extends JFrame
+{
+	//setting up GUI element variables
+	private static final long serialVersionUID = 1975L;
+	
+	static JTextField input = new JTextField("");
+	static JTextArea output = new JTextArea("");
+	private JScrollPane outScroll = new JScrollPane(output);
+	private JLabel directions = new JLabel("<html>Enter an integer below and press start!<html>", SwingConstants.CENTER);
+	static JButton start = new JButton("Start");
+	private JButton reset = new JButton("Reset");
+	static JButton cancel = new JButton("Cancel");
+	static JLabel time = new JLabel("", SwingConstants.CENTER);
+	static JTextField progress = new JTextField("");
+	private JLabel threads = new JLabel("", SwingConstants.CENTER);
+	//setting default state to not canceled
+	static boolean isCancel = false;
+	//initializing threadCount, timer, and timeRun
+	private Integer threadCount = 0;
+	Timer timer = new Timer(1000, new timeActionListener());
+	int timeRun = 0;
+	
+	//actionListener for the timer
+	private class timeActionListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e) 
+		{
+			//increments timer by the second
+			timeRun++;
+			//displays time run
+			time.setText(String.valueOf("GUI Running time: " + timeRun));
+			
+			if(isCancel == true)
+			{
+				timer.stop();
+				time.setText("It took roughly " + timeRun + " second(s) to find all primes.");
+			}
+			
+			//calls on the updater method in the non-GUI file to provide count of primes found so far every two seconds, while the state is not canceled
+			if(timeRun % 2 == 0 && ! isCancel == true)
+			{
+				PrimesNoGUI.updater();
+			}
+		}
+	}
+	//actionListener for the start button; sets the state to not canceled (this allows the user to search another number in the same GUI instance after cancel/reset)
+	//calls on the getThreads method to take the user's search number from the input text field and spawn the thread window
+	private class StartListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent arg0)
+		{
+			isCancel = false;
+			start.setEnabled(false);
+			cancel.setEnabled(true);
+			getThreads();
+		}
+	}
+	//method for resetting the GUI; activated by the actionListener associated with reset button
+	public void reset()
+	{
+		timer.stop();
+		timeRun = 0;
+		input.setText("");
+		output.setText("");
+		progress.setText("");
+		threads.setText("Number of Threads: ");
+		threadCount = 0;
+		start.setEnabled(true);
+	}
+	//actionListener for the reset button which calls on the reset method
+	private class ResetActionListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			reset();
+		}
+	}
+	//actionListener for the cancel button that stops the timer at the current time and provides a list of primes found so far
+	private class CancelListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			System.out.println("hit cancel");
+			isCancel = true;
+			timer.stop();
+			time.setText("GUI Running time: " + timeRun);
+			//this would ideally call the method that returns a list of all primes found until cancellation
+			output.append("You canceled the operation. Please hit reset.");
+		}
+	}
+	//manager method for starting new thread that will call on the control method in the non-GUI file and pass the userNum and threadCount to the method
+	public class ctrlSub implements Runnable
+	{
+		//initializing values
+		int userNum;
+		int threadCount;
+		public ctrlSub(int userNum, int threadCount)
+		{
+			this.userNum = userNum;
+			this.threadCount = threadCount;
+		}
+		public void run() 
+		{
+			try 
+			{
+				//passing the values to the control method in non-GUI file
+				PrimesNoGUI.control(userNum, threadCount);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	//method for getting the search number for finding primes and creating pop-up window that spawns after the user hits start 
+	//this window takes the user's desired number of threads and provides exception handling for invalid numbers
+	public void getThreads()
+	{
+		while(threadCount == 0)
+		{
+			//creates pop-up window and provides exception handling
+			threadCount = Integer.parseInt(JOptionPane.showInputDialog("Please enter the number of threads:"));
+			if(threadCount < 1)
+			{
+				threadCount = Integer.parseInt(JOptionPane.showInputDialog("Please enter a number greater than 0!"));
+			}
+			//displays given desired number of threads on main GUI
+			threads.setText("Number of Threads: " + threadCount.toString());
+		}
+		//takes the user's number to search for primes
+		int userNum = Integer.parseInt(input.getText());
+		//starts the timer for the GUI, NOT the same as calculation time
+		timer.start();
+		//spawns the ctrlSub thread
+		new Thread(new ctrlSub(userNum, threadCount)).start();
+	}
+	//panels adding GUI elements together 
+	private JPanel timeBar()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(2, 0));
+		panel.add(threads);
+		panel.add(time);
+		return panel;
+	}
+
+	private JPanel inputTime()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(2, 0));
+		panel.add(input);
+		panel.add(timeBar());
+		return panel;
+	}
+	
+	private JPanel north()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(2, 0));
+		panel.add(directions);
+		panel.add(inputTime());
+		return panel;
+	}
+	
+	private JPanel center()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(2, 0));
+		panel.add(progress);
+		progress.setEditable(false);
+		panel.add(outScroll);
+		output.setLineWrap(true);
+		output.setWrapStyleWord(true);
+		output.setEditable(false);
+		return panel;
+	}
+	
+	private JPanel south()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(0, 3));
+		panel.add(start);
+		panel.add(reset);
+		panel.add(cancel);
+		start.addActionListener(new StartListener());
+		cancel.addActionListener(new CancelListener());
+		reset.addActionListener(new ResetActionListener());
+		return panel;
+	}
+	//overall GUI construction, called on by the main method of this file
+
+	public PrimesGUI()
+	{
+		super("Very slow thing");
+		setLocationRelativeTo(null);
+		setSize(400, 400);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().add(north(), BorderLayout.NORTH);
+		getContentPane().add(center(), BorderLayout.CENTER);
+		getContentPane().add(south(), BorderLayout.SOUTH);
+		setVisible(true);
+	}
+
+	public static void main(String[] args)
+	{
+		//generates GUI from above method
+		new PrimesGUI();
+	}
+}
