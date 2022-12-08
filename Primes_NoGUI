@@ -1,0 +1,150 @@
+package lab6;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+
+public class PrimesNoGUI
+{
+	//defining variables for calculating the time it took for all primes to be found
+	static long startTime = 0;
+	static long endTime = 0;
+	//sync list for appending primes to as they are found; the size of this list is used to provide progress updates
+	static List<Integer> updates = Collections.synchronizedList(new ArrayList<Integer>());
+	//worker class for finding primes based on number of semaphores, userNum, and thread count
+	private static class Worker implements Runnable
+	{
+		//initializing variables
+		private Semaphore s;
+		private int userNum;
+		private int divisionNum;
+		private int threadCount;
+		
+		//creating method to return list of primes found by workers
+		public List<Integer> getPrimes() 
+		{
+			return Collections.unmodifiableList(primes);
+		}
+		//list to contain prime numbers
+		private List<Integer> primes = new ArrayList<>();
+		//worker constructor
+		public Worker(Semaphore s, int userNum, int threadCount, int divisionNum)
+		{
+			this.s = s;
+			this.userNum = userNum;
+			this.divisionNum = divisionNum;
+			this.threadCount = threadCount;
+		}
+		//actual code for determining whether or not a number is prime
+		@Override
+		public void run()
+		{
+			//while x is less than or equal to the number the user gave
+			for(int x = 0; x <= userNum; x++)
+				//splits the range of numbers to search for the workers
+				if(x % threadCount == divisionNum)
+				{
+					//passes the number to be checked to the method PrimeCheck to determine if a number is prime
+					if(PrimeCheck(x))
+					{
+						//if the number is prime, it is added to the primes list and the updates lists; updates exists for providing updates because the primes list 
+						//is inaccessible by the GUI and the updater() method below 
+						primes.add(x);
+						updates.add(x);
+					}
+				}
+			//allows the user to see output on the non-GUI side, mostly for problem solving
+			System.out.println(primes);
+			System.out.println(primes.size());
+			//when the worker is done searching their range, release the semaphore
+			s.release();
+		}
+	}
+	//updater method for providing the GUI with an updated count of the number of primes found based on the size of the global updates list
+	//this method is called on by the GUI every two seconds
+	public static void updater() 
+	{
+		PrimesGUI.progress.setText("Primes found so far: " + updates.size());
+	}
+	//method for providing the GUI with a list of primes found before cancellation
+	public static void cancelList() 
+	{
+		for(int n : updates)
+			PrimesGUI.output.append(n + "\n");
+	}
+	//method containing logic for determining if a number is a prime number
+	static boolean PrimeCheck(int x)
+	    {
+	        //negatives and 0 cannot be prime
+	       	if (x <= 1)
+	            return false;
+	        //numbers 2+ may be prime, so check all of them
+	        for (int i = 2; i < x; i++)
+	            if (x % i == 0)
+	                return false;
+	        return true;
+	    }
+   //control method has the logic of creating semaphores, calculating the time it took to find the primes, managing the workers, 
+   //and printing the final results to the GUI
+	public static void control(int userNum, int threadCount) throws Exception 
+	{
+		//time of calculation start
+		long startTime = System.currentTimeMillis();
+		//creating licenses based on the number of threads specified by the user
+		Semaphore s = new Semaphore(threadCount);
+		//creating list of workers
+		List<Worker> workerList = new ArrayList<>();
+		//for loop to distribute licenses
+		for(int x = 0; x < threadCount; x++)
+		{
+			s.acquire();
+			//passes the semaphore, search number, thread count, and division number to the Worker class
+			Worker w = new Worker(s, userNum, threadCount, x);
+			workerList.add(w);
+			//starts the worker thread
+			new Thread(w).start();
+		}
+		for(int x = 0; x < threadCount; x++)
+			s.acquire();
+		//end time of prime calculation
+		long endTime = System.currentTimeMillis();
+		//prints to the console, non-GUI, the time it took for calculation
+		System.out.println("Total time: " + (endTime-startTime)/1000f);
+		//creates final list for all primes to be appended to
+		List<Integer> results = new ArrayList<>();
+		//gather all primes from all workers
+		for(Worker w: workerList)
+			results.addAll(w.getPrimes());
+		//sort the primes in numerical order for viewing
+		Collections.sort(results);
+		
+		if( !PrimesGUI.isCancel)
+		{
+			//append all primes to the GUI output section
+			for(Integer n: results)
+			{
+				PrimesGUI.output.append(n +"\n");
+			}
+			//change state of GUI to cancel so the progress panel won't be further updated
+			PrimesGUI.isCancel = true;
+			//print the results to the console
+			System.out.println(results);
+			//print the final number of primes found to the GUI
+			PrimesGUI.progress.setText("Final prime count: " + results.size());
+			//print total calculation time to GUI
+			PrimesGUI.output.append("This took " + (endTime - startTime)/1000f + " seconds.");
+			//clear GUI timer
+			PrimesGUI.time.setText("");
+		}
+	}
+	//main method for running this file without the GUI; threadCount and userNum can be manually edited
+	public static void main(String[] args) throws Exception
+	{
+		int threadCount = 3;
+	
+		int userNum = 500;		
+		
+		control(userNum,threadCount);
+	}
+}
